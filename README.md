@@ -10,7 +10,7 @@ This is a project that provisions a webserver to serve a static HTML page.  It l
    - [Other](http://docs.ansible.com/ansible/intro_installation.html)
 
 2. Unencrypt the private ssh key and add it to your keychain using the following commands:
-   - `printf "q2oM6vzCPoh4nxZjkhDa7ha" > ansible_vault.txt`
+   - `printf "ENTER PASSWORD EMAILED" > ansible_vault.txt`
    - `ansible-vault decrypt stilligent_rsa`
    - `ssh-add  stilligent_rsa`
 
