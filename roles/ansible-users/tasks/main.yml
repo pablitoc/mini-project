@@ -1,0 +1,44 @@
+---
+- name: Create groups
+  group: name={{ item }} state=present
+  with_items:
+    - deploy
+    - admin
+
+- name: ensure sudoers.d is enabled
+  lineinfile: dest=/etc/sudoers state=present backup=yes regexp='^#includedir /etc/sudoers.d' line='#includedir /etc/sudoers.d'
+
+- name: set up password-less sudo for admin users
+  copy: content="%{{ item }} ALL=(ALL) NOPASSWD:ALL" dest="/etc/sudoers.d/{{ item }}" owner=root group=root mode=0440
+  with_items:
+    - admin
+    - deploy
+
+- name: Create users
+  user: name={{ item.name }} state=present group={{ item.group }} shell=/bin/bash
+  with_items:
+    - { name: 'deploy', group: 'deploy' }
+    - { name: 'admin', group: 'admin' }
+
+- name: Install Authorized Keys for Deploy
+  authorized_key: user=deploy
+                  key="{{ item }}"
+  with_file:
+    - stilligent_rsa.pub
+
+- name: Hash root from SSH access in sshd_config
+  lineinfile: dest=/etc/ssh/sshd_config state=present backup=yes regexp='^PermitRootLogin(.*)' line='PermitRootLogin no'
+
+- name: restart ssh
+  service: name=ssh state=restarted
+
+- name: Pause playbook
+  pause: seconds=15
+
+- name: Take owenership of /tmp
+  file: path=/tmp owner=deploy group=deploy state=touch
+  sudo: yes
+
+- name: Take owenership of /opt
+  file: path=/opt owner=deploy group=deploy state=touch
+  sudo: yes
