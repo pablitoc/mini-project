@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: True
+  serial: 5
+  vars_files:
+    - vars/default_vars.yml
+
+  roles:
+    - { role: ec2-group, tags: [ 'security' ] }
+    - { role: ec2-provision, tags: [ 'ec2' ] }
+
+- hosts: stilligent_mini_project
+  user: ubuntu
+  sudo: True
+  vars_files:
+  - vars/default_vars.yml
+
+  roles:
+    - { role: ansible-users, tags: [ 'users' ] }
+    - { role: linux-base, tags: [ 'apt' ] }
+
+  tasks:
+    - name: Copy Index.html
+      copy: src=index.html dest=/usr/share/nginx/html/index.html owner=root group=root
+
+    - name: Gather facts
+      action: ec2_facts
+      register: instance_info
+
+    - debug: msg="Please enter this into your browser='{{ ansible_ec2_public_hostname }}'"

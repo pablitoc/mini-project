@@ -1,0 +1,18 @@
+---
+- name: Update Apt
+  apt: update_cache=yes
+  sudo: yes
+
+- name: Install specified packages
+  apt: pkg={{ item }} state=latest
+  sudo: yes
+  with_items:
+    - "{{ linux_packages }}"
+
+- name: Upgrade Apt
+  apt: upgrade=safe
+  sudo: yes
+
+- name: Setup Time Zone
+  template: src=timezone.j2 dest=/etc/timezone
+  sudo: yes
